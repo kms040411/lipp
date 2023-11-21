@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <algorithm>
+#include <vector>
 
 #include "mkl.h"
 #include "mkl_lapacke.h"
@@ -19,7 +20,7 @@ public:
     double model[LEN + USE_BIAS] = {0.0}; // Model
 
     LinearModel() = default;
-    LinearModel(double *other_model): {
+    LinearModel(double *other_model) {
         for(size_t i=0; i<LEN + USE_BIAS; i++) {
             model[i] = other_model[i];
         }
@@ -47,7 +48,7 @@ public:
         return std::floor(predict_double(key));
     }
 
-    inline void train(std::vector<std::pair<T, size_t>> key_idx&) {
+    inline void train(std::vector<std::pair<T, size_t>> &key_idx) {
         int m = key_idx.size();
         int n = USE_BIAS ? LEN + 1 : LEN;
         double *a = (double *) malloc(sizeof(double) * m * n);
@@ -61,7 +62,7 @@ public:
         }
 
         LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', m, n, 1, a, n, b, 1);
-        
+
         for (size_t j=0; j<LEN; j++) {
             model[j] = b[j];
         }
