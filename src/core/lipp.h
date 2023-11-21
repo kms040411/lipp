@@ -81,7 +81,7 @@ public:
                 }
                 P first_val = P();
                 P second_val = P();
-                Node* node = build_tree_two(T(0), P(), T(1), P());
+                Node* node = build_tree_two(first_key, first_val, second_key, second_val);
                 nodes.push_back(node);
             }
             for (auto node : nodes) {
