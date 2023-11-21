@@ -73,15 +73,13 @@ public:
         {
             std::vector<Node*> nodes;
             for (int _ = 0; _ < 1e7; _ ++) {
-                T first_key;
-                T second_key;
+                char[LEN] first_key;
+                char[LEN] second_key;
                 for (size_t idx=0; idx<LEN; idx++) {
                     first_key[idx] = 0;
                     second_key[idx] = 127;
                 }
-                P first_val = P();
-                P second_val = P();
-                Node* node = build_tree_two(first_key, first_val, second_key, second_val);
+                Node* node = build_tree_two(T(first_key), P(), T(second_key), P());
                 nodes.push_back(node);
             }
             for (auto node : nodes) {
@@ -322,7 +320,7 @@ private:
             std::swap(key1, key2);
             std::swap(value1, value2);
         }
-        std::cout << key1 << " - " << key2 << std::endl;
+        std::cout << key1[0] << " - " << key2 << std::endl;
         RT_ASSERT(key1 < key2);
         // static_assert(BITMAP_WIDTH == 8);
 
