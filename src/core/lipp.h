@@ -79,6 +79,7 @@ public:
                     first_key[idx] = 0;
                     second_key[idx] = 127;
                 }
+                std::cout << (int)first_key[0] << " - " << (int)second_key[0] << std::endl;
                 Node* node = build_tree_two(T(first_key), P(), T(second_key), P());
                 nodes.push_back(node);
             }
