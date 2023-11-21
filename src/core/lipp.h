@@ -73,8 +73,8 @@ public:
         {
             std::vector<Node*> nodes;
             for (int _ = 0; _ < 1e7; _ ++) {
-                char[LEN] first_key;
-                char[LEN] second_key;
+                char first_key[LEN];
+                char second_key[LEN];
                 for (size_t idx=0; idx<LEN; idx++) {
                     first_key[idx] = 0;
                     second_key[idx] = 127;
