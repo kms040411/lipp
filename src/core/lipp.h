@@ -73,6 +73,14 @@ public:
         {
             std::vector<Node*> nodes;
             for (int _ = 0; _ < 1e7; _ ++) {
+                T first_key;
+                T second_key;
+                for (size_t idx=0; idx<LEN; idx++) {
+                    first_key[idx] = 0;
+                    second_key[idx] = 127;
+                }
+                P first_val = P();
+                P second_val = P();
                 Node* node = build_tree_two(T(0), P(), T(1), P());
                 nodes.push_back(node);
             }
