@@ -322,6 +322,7 @@ private:
             std::swap(key1, key2);
             std::swap(value1, value2);
         }
+        std::cout << key1 << " - " << key2 << std::endl;
         RT_ASSERT(key1 < key2);
         // static_assert(BITMAP_WIDTH == 8);
 
