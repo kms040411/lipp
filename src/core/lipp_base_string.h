@@ -26,7 +26,7 @@ public:
         }
     }
     explicit LinearModel(const LinearModel &other) {
-        for(size_t i=0; i<LEN + 1; i++) {
+        for(size_t i=0; i<LEN + USE_BIAS; i++) {
             model[i] = other.model[i];
         }
     }
@@ -38,7 +38,7 @@ public:
             res += model[i] * (double)(key[i]);
         }
         if (USE_BIAS) {
-            res += model[LEN + USE_BIAS - 1];
+            res += model[LEN];
         }
         return res;
     }
@@ -48,11 +48,11 @@ public:
         return std::floor(predict_double(key));
     }
 
-    inline void train(std::vector<std::pair<T, size_t>> &key_idx) {
-        int m = key_idx.size();
-        int n = USE_BIAS ? LEN + 1 : LEN;
+    inline void train(std::vector<std::pair<T, double>> &key_idx) {
+        size_t m = key_idx.size();
+        size_t n = USE_BIAS ? LEN + 1 : LEN;
         double *a = (double *) malloc(sizeof(double) * m * n);
-        double *b = (double *) malloc(sizeof(double) * m);
+        double *b = (double *) malloc(sizeof(double) * std::max(m, n));
         for (size_t i=0; i<m; i++) {
             for (size_t j=0; j<LEN; j++) {
                 a[i * n + j] = (double)(key_idx[i].first[j]);
