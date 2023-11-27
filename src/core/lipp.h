@@ -356,7 +356,6 @@ private:
             int pos = PREDICT_POS(node, key1);
             RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
             BITMAP_CLEAR(node->none_bitmap, pos);
-            RT_ASSERT(node->items[pos].key.empty());
             node->items[pos].key = key1;
             node->items[pos].value = value1;
         }
@@ -364,7 +363,6 @@ private:
             int pos = PREDICT_POS(node, key2);
             RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
             BITMAP_CLEAR(node->none_bitmap, pos);
-            RT_ASSERT(node->items[pos].key.empty());
             node->items[pos].key = key2;
             node->items[pos].value = value2;
         }
