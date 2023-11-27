@@ -71,26 +71,26 @@ public:
     LIPP(bool QUIET = true)
         : QUIET(QUIET) {
         {
-            std::vector<Node*> nodes;
-            char first_key[LEN+1];
-            char second_key[LEN+1];
-            for (int _ = 0; _ < 1e7; _ ++) {
-                for (size_t idx=0; idx<LEN; idx++) {
-                    first_key[idx] = 32;
-                    second_key[idx] = 126;
-                }
-                first_key[LEN] = 0;
-                second_key[LEN] = 0;
+            // std::vector<Node*> nodes;
+            // char first_key[LEN+1];
+            // char second_key[LEN+1];
+            // for (int _ = 0; _ < 1e7; _ ++) {
+            //     for (size_t idx=0; idx<LEN; idx++) {
+            //         first_key[idx] = 32;
+            //         second_key[idx] = 126;
+            //     }
+            //     first_key[LEN] = 0;
+            //     second_key[LEN] = 0;
 
-                Node* node = build_tree_two(T(first_key), P(), T(second_key), P());
-                nodes.push_back(node);
-            }
-            for (auto node : nodes) {
-                destroy_tree(node);
-            }
-            if (!QUIET) {
-                printf("initial memory pool size = %lu\n", pending_two.size());
-            }
+            //     Node* node = build_tree_two(T(first_key), P(), T(second_key), P());
+            //     nodes.push_back(node);
+            // }
+            // for (auto node : nodes) {
+            //     destroy_tree(node);
+            // }
+            // if (!QUIET) {
+            //     printf("initial memory pool size = %lu\n", pending_two.size());
+            // }
         }
 
         root = build_tree_none();
@@ -410,7 +410,6 @@ private:
                 node->num_inserts = node->num_insert_to_data = 0;
 
                 // TODO:
-                exit(-1);
                 std::vector<std::pair<T, double>> train_data;
                 for (int idx=0; idx<size; idx++) {
                     train_data.push_back(std::make_pair(keys[idx], (double)(idx * (BUILD_GAP_CNT + 1) + (BUILD_GAP_CNT + 1) / 2)));
