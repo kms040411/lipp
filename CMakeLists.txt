@@ -32,4 +32,10 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 # add_executable(range src/range.cpp)
 
 add_executable(bench src/bench/bench.cpp)
-target_link_libraries(bench PRIVATE mkl_rt)
+target_link_libraries(bench PRIVATE mkl_rt -lpthread)
+
+add_executable(ycsb src/bench/ycsb.cpp)
+target_link_libraries(ycsb PRIVATE mkl_rt -lpthread)
+
+add_executable(twitter src/bench/twitter.cpp)
+target_link_libraries(twitter PRIVATE mkl_rt -lpthread)

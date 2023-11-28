@@ -409,7 +409,6 @@ private:
                 node->fixed = 0;
                 node->num_inserts = node->num_insert_to_data = 0;
 
-                // TODO:
                 std::vector<std::pair<T, double>> train_data;
                 for (int idx=0; idx<size; idx++) {
                     train_data.push_back(std::make_pair(keys[idx], (double)(idx * (BUILD_GAP_CNT + 1) + (BUILD_GAP_CNT + 1) / 2)));
