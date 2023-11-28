@@ -415,30 +415,7 @@ private:
                     train_data.push_back(std::make_pair(keys[idx], (double)(idx * (BUILD_GAP_CNT + 1) + (BUILD_GAP_CNT + 1) / 2)));
                 }
                 node->model.train(train_data);
-                // int mid1_pos = (size - 1) / 3;
-                // int mid2_pos = (size - 1) * 2 / 3;
-
-                // RT_ASSERT(0 <= mid1_pos);
-                // RT_ASSERT(mid1_pos < mid2_pos);
-                // RT_ASSERT(mid2_pos < size - 1);
-
-                // const long double mid1_key =
-                //         (static_cast<long double>(keys[mid1_pos]) + static_cast<long double>(keys[mid1_pos + 1])) / 2;
-                // const long double mid2_key =
-                //         (static_cast<long double>(keys[mid2_pos]) + static_cast<long double>(keys[mid2_pos + 1])) / 2;
-
-                // node->num_items = size * static_cast<int>(BUILD_GAP_CNT + 1);
-                // const double mid1_target = mid1_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
-                // const double mid2_target = mid2_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
-
-                // node->model.a = (mid2_target - mid1_target) / (mid2_key - mid1_key);
-                // node->model.b = mid1_target - node->model.a * mid1_key;
-                // RT_ASSERT(isfinite(node->model.a));
-                // RT_ASSERT(isfinite(node->model.b));
-
-                // const int lr_remains = static_cast<int>(size * BUILD_LR_REMAIN);
-                // node->model.b += lr_remains;
-                // node->num_items += lr_remains * 2;
+                node->num_items = size * static_cast<int>(BUILD_GAP_CNT + 1);
 
                 if (size > 1e6) {
                     node->fixed = 1;

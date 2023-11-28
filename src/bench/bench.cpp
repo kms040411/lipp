@@ -26,15 +26,16 @@ int main()
     RT_ASSERT(lipp.at("12345678") == 1);
     RT_ASSERT(lipp.at("87654321") == 3);
 
-    const int num_key = 100;
+    const int num_key = 1000000;
     std::vector<std::pair<std::string, int>> keys;
     for(int i=0; i<num_key; i++) {
         std::string gen_str = random_string(KEY_LEN);
-        std::cout << gen_str << std::endl;
         keys.push_back(std::make_pair(gen_str, 1));
     }
     std::sort(keys.begin(), keys.end(), [](auto const& a, auto const& b) { return a.first < b.first; });
     lipp.bulk_load(&keys[0], num_key);
 
+    std::cout << "Everything worked well\n";
+    
     return 0;
 }
