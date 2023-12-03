@@ -11,6 +11,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include <tuple>
 
 // typedef uint8_t bitmap_t;
 typedef uint16_t bitmap_t;
@@ -92,7 +93,6 @@ public:
             //     printf("initial memory pool size = %lu\n", pending_two.size());
             // }
         }
-
         root = build_tree_none();
     }
     ~LIPP() {
@@ -119,7 +119,7 @@ public:
                     return node->items[pos].value;
                 } else {
                     if (BITMAP_GET(node->none_bitmap, pos) == 1) {
-                        RT_ASSERT(false);
+                        return -1;
                     } else if (BITMAP_GET(node->child_bitmap, pos) == 0) {
                         RT_ASSERT(node->items[pos].key == key);
                         return node->items[pos].value;
@@ -160,18 +160,26 @@ public:
         }
 
         RT_ASSERT(num_keys > 2);
+        std::vector<int> dup_keys;
         for (int i = 1; i < num_keys; i ++) {
-            RT_ASSERT(vs[i].first > vs[i-1].first);
+            if (!(vs[i].first > vs[i-1].first))
+                dup_keys.push_back(i);
+            //RT_ASSERT(vs[i].first > vs[i-1].first);
         }
 
         T* keys = new T[num_keys];
         P* values = new P[num_keys];
+        int counter = 0;
         for (int i = 0; i < num_keys; i ++) {
-            keys[i] = vs[i].first;
-            values[i] = vs[i].second;
+            if ( std::find(dup_keys.begin(), dup_keys.end(), i) == dup_keys.end() ) {
+                keys[counter] = vs[i].first;
+                values[counter] = vs[i].second;
+                counter++;
+            }
         }
         destroy_tree(root);
-        root = build_tree_bulk(keys, values, num_keys);
+        std::cout << "total keys: " << counter << std::endl;
+        root = build_tree_bulk(keys, values, counter);
         delete[] keys;
         delete[] values;
     }
@@ -240,7 +248,7 @@ private:
             std::string key;
             P value;
             Node* child;
-            Item() { key = ""; value = 0; child=nullptr;}
+            Item() { key = ""; value = 0; child=nullptr; }
     };
     class Node
     {
@@ -354,14 +362,14 @@ private:
 
         { // insert key1&value1
             int pos = PREDICT_POS(node, key1);
-            RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
+            //RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
             BITMAP_CLEAR(node->none_bitmap, pos);
             node->items[pos].key = key1;
             node->items[pos].value = value1;
         }
         { // insert key2&value2
             int pos = PREDICT_POS(node, key2);
-            RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
+            //RT_ASSERT(BITMAP_GET(node->none_bitmap, pos) == 1);
             BITMAP_CLEAR(node->none_bitmap, pos);
             node->items[pos].key = key2;
             node->items[pos].value = value2;
@@ -384,6 +392,8 @@ private:
 
         Node* ret = new_nodes(1);
         s.push((Segment){0, _size, 1, ret});
+
+        std::vector<std::pair<T, double>> train_data;
 
         while (!s.empty()) {
             const int begin = s.top().begin;
@@ -409,12 +419,22 @@ private:
                 node->fixed = 0;
                 node->num_inserts = node->num_insert_to_data = 0;
 
-                std::vector<std::pair<T, double>> train_data;
                 for (int idx=0; idx<size; idx++) {
                     train_data.push_back(std::make_pair(keys[idx], (double)(idx * (BUILD_GAP_CNT + 1) + (BUILD_GAP_CNT + 1) / 2)));
                 }
                 node->model.train(train_data);
                 node->num_items = size * static_cast<int>(BUILD_GAP_CNT + 1);
+                train_data.clear();
+
+                // std::vector<std::tuple<T, P, int>> trained_data;
+                // for (int idx=0; idx<size; idx++){
+                //     trained_data.push_back(std::make_tuple(keys[idx], values[idx], PREDICT_POS(node, keys[idx])));
+                // }
+                // std::sort(trained_data.begin(), trained_data.end(), [](const auto& a, const auto&b) { return std::get<2>(a) < std::get<2>(b); });
+                // for (int idx=0; idx<size; idx++){
+                //     keys[idx] = std::get<0>(trained_data[idx]);
+                //     values[idx] = std::get<1>(trained_data[idx]);
+                // }
 
                 if (size > 1e6) {
                     node->fixed = 1;
@@ -553,7 +573,7 @@ private:
 
     Node* insert_tree(Node* _node, const T& key, const P& value)
     {
-        constexpr int MAX_DEPTH = 128;
+        constexpr int MAX_DEPTH = 256;
         Node* path[MAX_DEPTH];
         int path_size = 0;
         int insert_to_data = 0;
@@ -588,7 +608,12 @@ private:
             const int num_inserts = node->num_inserts;
             const int num_insert_to_data = node->num_insert_to_data;
             const bool need_rebuild = node->fixed == 0 && node->size >= node->build_size * 4 && node->size >= 64 && num_insert_to_data * 10 >= num_inserts;
-
+            // bool a = node->fixed == 0;
+            // bool b = node->size >= node->build_size * 2;
+            // bool c = node->size >= 16;
+            // bool d = num_insert_to_data * 2 >= num_inserts;
+            // //printf("%d / %d %d %d %d\n", node->size, a, b, c, d);
+            // const bool need_rebuild = a && b && c && d;
             if (need_rebuild) {
                 const int ESIZE = node->size;
                 T* keys = new T[ESIZE];

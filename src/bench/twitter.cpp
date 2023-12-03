@@ -41,7 +41,6 @@
 #include <fstream>
 
 #include "../test_config.h"
-#include "../lock.h"
 #include "../helper.h"
 #include <lipp.h>
 #include "mkl.h"
@@ -53,6 +52,9 @@ struct alignas(CACHELINE_SIZE) FGParam;
 typedef FGParam fg_param_t;
 typedef std::string index_key_t;
 typedef LIPP<index_key_t, int, MAX_KEY_SIZE> lipp_t;
+
+std::vector<std::pair<index_key_t, int>> exist_keys;
+#include "../lock.h"
 
 inline void prepare_sindex(lipp_t *&table);
 
@@ -101,6 +103,8 @@ int main(int argc, char **argv) {
 }
 
 inline void prepare_sindex(lipp_t *&table) {
+  table = new lipp_t();
+
   char filename[256];
   sprintf(filename, "/home/mskim/workspace/twitter/load%s", cluster_number);
   std::cout << "opening filename: " << filename << std::endl;
@@ -110,20 +114,19 @@ inline void prepare_sindex(lipp_t *&table) {
 	std::string line;
 	char key[MAX_KEY_SIZE];
 
-  std::vector<std::pair<index_key_t, int>> exist_keys;
 	while (std::getline(tracefile, line)) {
 		sscanf(line.c_str(), "%s", key);
 		index_key_t query_key(key);
 		exist_keys.push_back(std::make_pair(query_key, 1));
 		_tablesize++;
-    if (_tablesize > 10000000) break;
+    if (_tablesize > table_size) break;
 	}
 	printf("Loaded keys: %ld\n", _tablesize);
 
   // initilize SIndex (sort keys first)
   std::sort(exist_keys.begin(), exist_keys.end(),
-    [](auto const& a, auto const& b) { return a.first < b.first; });
-  table = new lipp_t();
+   [](auto const& a, auto const& b) { return a.first < b.first; });
+  std::cout << "start training\n";
   table->bulk_load(exist_keys.data(), exist_keys.size());
 }
 
@@ -194,7 +197,10 @@ void *run_fg(void *param) {
       }
       case 'p':
       {
-        table->insert(std::make_pair(query_key, dummy_value));
+        if (mkl_threads == 1)
+          volatile auto res = table->at(query_key);
+        else
+          table->insert(std::make_pair(query_key, dummy_value));
         break;
       }
       case 'd':
@@ -237,6 +243,9 @@ void run_benchmark(lipp_t *table, size_t sec) {
 
   signal(SIGALRM, sig_handler);
   throughput_pid = getpid();
+
+  gen_virtual_bg_thread();
+  sleep(10);
 
   running = false;
   for (size_t worker_i = 0; worker_i < fg_n; worker_i++) {

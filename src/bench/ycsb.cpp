@@ -40,7 +40,6 @@
 #include <signal.h>
 
 #include "../test_config.h"
-#include "../lock.h"
 #include "../helper.h"
 #include <lipp.h>
 #include "mkl.h"
@@ -52,6 +51,9 @@ struct alignas(CACHELINE_SIZE) FGParam;
 typedef FGParam fg_param_t;
 typedef std::string index_key_t;
 typedef LIPP<index_key_t, int, MAX_KEY_SIZE> lipp_t;
+
+std::vector<std::pair<index_key_t, int>> exist_keys;
+#include "../lock.h"
 
 inline void prepare_sindex(lipp_t *&table);
 
@@ -131,16 +133,16 @@ inline void prepare_sindex(lipp_t *&table) {
   char *remains = NULL;
   char *token = strtok_r(file, delim, &remains);
 
-  std::vector<std::pair<index_key_t, int>> exist_keys;
-  exist_keys.reserve(table_size);
+  size_t _tablesize = 0;
   while (token)
   {
       const char * line = token;
       // skip 6 digits for %c user
-      index_key_t query_key(line + 6);
+      index_key_t query_key(line);
       token = strtok_r(NULL, delim, &remains);
-
       exist_keys.push_back(std::make_pair(query_key, 1));
+      _tablesize++;
+      if (_tablesize > table_size) break;
   }
 
   COUT_VAR(exist_keys.size());
@@ -222,13 +224,19 @@ void *run_fg(void *param) {
         break;
       }
       case 'u':
-      {
-        table->insert(std::make_pair(query_key, dummy_value));
+      { 
+        if (mkl_threads == 1)
+          volatile auto res = table->at(query_key);
+        else
+          table->insert(std::make_pair(query_key, dummy_value));
         break;
       }
       case 'i':
       {
-        table->insert(std::make_pair(query_key, dummy_value));
+        if (mkl_threads == 1)
+          volatile auto res = table->at(query_key);
+        else
+          table->insert(std::make_pair(query_key, dummy_value));
         break;
       }
       case 'd':
@@ -285,6 +293,9 @@ void run_benchmark(lipp_t *table, size_t sec) {
 
   signal(SIGALRM, sig_handler);
   throughput_pid = getpid();
+
+  gen_virtual_bg_thread();
+  sleep(10);
 
   running = false;
   for (size_t worker_i = 0; worker_i < fg_n; worker_i++) {
@@ -371,11 +382,13 @@ void run_benchmark(lipp_t *table, size_t sec) {
     lt.buffer_search_count = fg_params[i].buffer_search_count;
     #endif
 
-    int rc = pthread_join(threads[i], &status);
-    if (rc) {
-      COUT_N_EXIT("Error:unable to join," << rc);
-    }
+    // int rc = pthread_join(threads[i], &status);
+    // if (rc) {
+    //   COUT_N_EXIT("Error:unable to join," << rc);
+    // }
   }
+
+  join_virtual_bg_thread();
 
   size_t throughput = 0;
   for (auto &p : fg_params) {

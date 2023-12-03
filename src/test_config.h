@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#define MAX_KEY_SIZE 16
-#define SEED 38572
+// #define MAX_KEY_SIZE 44
+#define SEED 385726
 //#define INSERTED_RANDOM
 #define ENTIRE_RANDOM
 #define PRINT_LATENCY
@@ -32,7 +32,7 @@
  *****************************/
 
 // #define SEQUENTIAL_DIST
-// #define UNIFORM_DIST
+//#define UNIFORM_DIST
 // #define LATEST_DIST
 // #define EXPONENT_DIST
 // #define ZIPF_DIST

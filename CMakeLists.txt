@@ -31,11 +31,27 @@ include_directories(${MKL_INCLUDE_DIRECTORY})
 
 # add_executable(range src/range.cpp)
 
-add_executable(bench src/bench/bench.cpp)
-target_link_libraries(bench PRIVATE mkl_rt -lpthread)
+# add_executable(test src/bench/test.cpp)
+# target_link_libraries(test PRIVATE mkl_rt -lpthread)
 
-add_executable(ycsb src/bench/ycsb.cpp)
-target_link_libraries(ycsb PRIVATE mkl_rt -lpthread)
+list(APPEND DistList SEQUENTIAL_DIST UNIFORM_DIST LATEST_DIST EXPONENT_DIST ZIPF_DIST HOTSPOT_DIST)
 
-add_executable(twitter src/bench/twitter.cpp)
-target_link_libraries(twitter PRIVATE mkl_rt -lpthread)
+foreach(Dist IN LISTS DistList)
+  add_executable(bench_${Dist} src/bench/bench.cpp)
+  target_link_libraries(bench_${Dist} PRIVATE mkl_rt -lpthread)
+  target_compile_definitions(bench_${Dist} PRIVATE ${Dist} MAX_KEY_SIZE=64)
+endforeach()
+
+list(APPEND ycsb_key_size 12 128)
+# foreach(key_size IN LISTS ycsb_key_size)
+#   add_executable(ycsb_${key_size} src/bench/ycsb.cpp)
+#   target_link_libraries(ycsb_${key_size} PRIVATE mkl_rt -lpthread)
+#   target_compile_definitions(ycsb_${key_size} PRIVATE MAX_KEY_SIZE=${key_size})
+# endforeach()
+
+# list(APPEND twitter_key_size 44 19 47 82)
+# foreach(key_size IN LISTS twitter_key_size)
+#   add_executable(twitter_${key_size} src/bench/twitter.cpp)
+#   target_link_libraries(twitter_${key_size} PRIVATE mkl_rt -lpthread)
+#   target_compile_definitions(twitter_${key_size} PRIVATE MAX_KEY_SIZE=${key_size})
+# endforeach()
